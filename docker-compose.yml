@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: provenance-guardian-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=INFO
+      - MODEL_CACHE_DIR=/app/data/models
+      - FINGERPRINT_DIR=/app/data/fingerprints
+      - ENABLE_GPU=${ENABLE_GPU:-true}
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - model-cache:/app/data/models
+      - fingerprint-data:/app/data/fingerprints
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: uvicorn api.server:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: provenance-guardian-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+
+volumes:
+  model-cache:
+  fingerprint-data:
