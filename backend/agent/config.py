@@ -1,4 +1,7 @@
-from pydantic_settings import BaseSettings
+# ============================================
+# backend/agent/config.py
+# ============================================
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 from pathlib import Path
 import os
@@ -6,6 +9,14 @@ import os
 
 class Settings(BaseSettings):
     """Application configuration"""
+    
+    # Pydantic v2 configuration
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore"  # This allows extra fields from .env
+    )
     
     # Environment
     environment: str = "development"
@@ -18,7 +29,7 @@ class Settings(BaseSettings):
     fingerprint_dir: Path = Path("./data/fingerprints")
     
     # Fingerprint Security
-    fingerprint_encryption_key: str
+    fingerprint_encryption_key: str = "default-key-change-this"
     master_fingerprints_file: str = "guardian_master_fingerprints.enc"
     
     # Audit Configuration
@@ -31,7 +42,7 @@ class Settings(BaseSettings):
     # API Configuration
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    cors_origins: list = ["http://localhost:5173", "http://localhost:3000"]
     
     # Hugging Face
     hf_token: Optional[str] = None
@@ -44,11 +55,7 @@ class Settings(BaseSettings):
     # Performance
     max_concurrent_audits: int = 2
     model_cache_size_gb: int = 50
-    enable_model_quantization: bool = True  # For CPU inference
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    enable_model_quantization: bool = True
 
 
 # Global settings instance
