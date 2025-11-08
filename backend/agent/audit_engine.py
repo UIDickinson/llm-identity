@@ -1,3 +1,6 @@
+# ============================================
+# backend/agent/audit_engine.py
+# ============================================
 import asyncio
 import time
 from typing import Dict, Any, Optional, Callable
@@ -6,10 +9,10 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import random
 
-from .config import settings
-from ..models.loader import ModelLoader
-from ..fingerprints.validator import FingerprintValidator
-from ..utils.logger import get_logger
+from agent.config import settings
+from models.loader import ModelLoader
+from fingerprints.validator import FingerprintValidator
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -22,7 +25,7 @@ class AuditEngine:
         self.validator = FingerprintValidator()
         self._own_model = None
         self._own_tokenizer = None
-        
+    
     async def audit_model(
         self,
         model_path: str,
