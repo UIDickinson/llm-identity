@@ -5,8 +5,8 @@ from pathlib import Path
 from collections import OrderedDict
 import threading
 
-from ..agent.config import settings
-from ..utils.logger import get_logger
+from agent.config import settings
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

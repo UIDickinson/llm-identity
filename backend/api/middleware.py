@@ -4,7 +4,7 @@ Custom middleware for API
 import time
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from ..utils.logger import get_logger
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
