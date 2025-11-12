@@ -2,11 +2,8 @@ from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import StreamingResponse
 from typing import AsyncIterator
 import json
-import uuid
-from ulid import ULID
 
-from sentient_agent_framework.interface.session import SessionObject
-from sentient_agent_framework.interface.request import Query
+from sentient_agent_framework import Session, Query, ResponseHandler
 from .schemas import (
     AuditRequest,
     AuditResponse,
@@ -20,7 +17,7 @@ logger = get_logger(__name__)
 router = APIRouter()
 
 
-class SSEResponseHandler:
+class SSEResponseHandler(ResponseHandler):
     """Custom ResponseHandler that streams SSE events"""
     
     def __init__(self):
@@ -102,20 +99,9 @@ async def assist_endpoint(request: Request, chat_request: ChatRequest):
     try:
         agent = request.app.state.agent
         
-        # Create proper session object
-        session = SessionObject(
-            session_id=chat_request.session_id or "local",
-            processor_id=str(uuid.uuid4()),
-            activity_id=str(ULID()),
-            request_id=str(ULID()),
-            interactions=[]
-        )
-        
-        # Create query with id
-        query = Query(
-            id=str(ULID()),
-            prompt=chat_request.message
-        )
+        # Create session and query
+        session = Session(session_id=chat_request.session_id or "local")
+        query = Query(prompt=chat_request.message)
         
         # Create response handler
         response_handler = SSEResponseHandler()
@@ -144,8 +130,11 @@ async def assist_endpoint(request: Request, chat_request: ChatRequest):
 
 @router.post("/audit", response_model=AuditResponse)
 async def audit_endpoint(request: Request, audit_request: AuditRequest):
-    """Direct audit endpoint (non-streaming, for API clients)"""
+    """
+    Direct audit endpoint (non-streaming, for API clients)
+    """
     try:
+        # Validate input
         if not InputValidator.validate_model_path(audit_request.model_path):
             raise HTTPException(status_code=400, detail="Invalid model path")
         
@@ -154,6 +143,7 @@ async def audit_endpoint(request: Request, audit_request: AuditRequest):
         
         agent = request.app.state.agent
         
+        # Run audit
         result = await agent.audit_engine.audit_model(
             model_path=audit_request.model_path,
             mode=audit_request.mode
@@ -173,7 +163,9 @@ async def generate_fingerprints_endpoint(
     request: Request,
     gen_request: FingerprintGenerateRequest
 ):
-    """Generate custom fingerprints for users"""
+    """
+    Generate custom fingerprints for users
+    """
     try:
         agent = request.app.state.agent
         
