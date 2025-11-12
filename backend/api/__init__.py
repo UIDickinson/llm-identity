@@ -1,7 +1,7 @@
 """
 API module for FastAPI server
 """
-from .server import app
+"""from .server import app
 from .routes import router
 from .schemas import (
     ChatRequest,
@@ -10,4 +10,4 @@ from .schemas import (
     FingerprintGenerateRequest
 )
 
-__all__ = ['app', 'router']
+__all__ = ['app', 'router']"""

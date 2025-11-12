@@ -11,10 +11,10 @@ from sentient_agent_framework import (
     ResponseHandler
 )
 
-from .config import settings
-from .audit_engine import AuditEngine
-from .fingerprint_service import FingerprintService
-from ..utils.logger import get_logger
+from agent.config import settings
+from agent.audit_engine import AuditEngine
+from agent.fingerprint_service import FingerprintService
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

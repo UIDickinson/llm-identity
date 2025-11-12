@@ -4,8 +4,8 @@ from typing import Dict, Any
 from cryptography.fernet import Fernet
 import base64
 
-from ..agent.config import settings
-from ..utils.logger import get_logger
+from agent.config import settings
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

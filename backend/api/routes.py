@@ -10,8 +10,8 @@ from .schemas import (
     ChatRequest,
     FingerprintGenerateRequest
 )
-from ..utils.logger import get_logger
-from ..utils.validators import InputValidator
+from utils.logger import get_logger
+from utils.validators import InputValidator
 
 logger = get_logger(__name__)
 router = APIRouter()

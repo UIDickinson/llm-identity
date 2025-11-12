@@ -4,8 +4,8 @@ import string
 from typing import Dict, Any
 from pathlib import Path
 
-from .config import settings
-from ..utils.logger import get_logger
+from agent.config import settings
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

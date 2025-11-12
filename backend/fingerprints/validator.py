@@ -2,9 +2,9 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 import json
 
-from ..agent.config import settings
-from .storage import FingerprintStorage
-from ..utils.logger import get_logger
+from agent.config import settings
+from fingerprints.storage import FingerprintStorage
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

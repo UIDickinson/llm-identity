@@ -4,24 +4,30 @@ Test the agent locally without running the full server
 """
 import asyncio
 import sys
+import uuid
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
+from ulid import ULID
+from sentient_agent_framework.interface.session import SessionObject
+from sentient_agent_framework.interface.request import Query
 from agent.provenance_guardian import ProvenanceGuardian
-from sentient_agent_framework import Session, Query
 from api.routes import SSEResponseHandler
 
 
-async def test_command(command: str):
+async def test_command(cmd: str):
     """Test a single command"""
     print(f"\n{'='*60}")
-    print(f"Testing: {command}")
+    print(f"Testing: {cmd}")
     print('='*60)
     
     agent = ProvenanceGuardian()
-    session = Session(session_id="test")
-    query = Query(prompt=command)
+    session = SessionObject(
+        session_id="test",
+        processor_id=str(uuid.uuid4()),
+        activity_id=str(ULID()),
+        request_id=str(ULID()),
+        interactions=[]
+    )
+    query = Query(id=str(ULID()), prompt=cmd)
     handler = SSEResponseHandler()
     
     await agent.assist(session, query, handler)

@@ -1,0 +1,17 @@
+{
+  "queries": [
+    "test query one",
+    "test query two", 
+    "test query three"
+  ],
+  "responses": {
+    "test query one": "test response one",
+    "test query two": "test response two",
+    "test query three": "test response three"
+  },
+  "metadata": {
+    "num_fingerprints": 3,
+    "key_length": 20,
+    "response_length": 20
+  }
+}
