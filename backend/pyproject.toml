@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "provenance-guardian"
+version = "1.0.0"
+description = "AI Model Authenticity Auditor"
+requires-python = ">=3.10"
+dependencies = [
+    "sentient-agent-framework>=0.1.0",
+    "torch>=2.0.0",
+    "transformers>=4.35.0",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "python-ulid>=1.1.0",
+]
+
+[tool.setuptools]
+packages = ["agent", "api", "models", "fingerprints", "utils"]
