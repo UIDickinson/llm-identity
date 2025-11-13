@@ -67,6 +67,29 @@ source env/bin/activate  # Windows: env\Scripts\activate
 pip install -r requirements.txt
 DS_BUILD_OPS=1 pip install deepspeed
 
+# Test before fingerprinting
+chmod +x test_all_functions.py
+
+PYTHONPATH=/workspaces/llm-identity/backend python test_all_functions.py # test all functions
+
+#---------------------
+# test api server
+
+# Terminal 1: Start server
+./run_backend.sh
+
+# Or with explicit PYTHONPATH
+PYTHONPATH=/workspaces/llm-identity/backend uvicorn api.server:app --reload --host 0.0.0.0 --port 8000
+
+# Open another terminal and run the below to test api endpoints and performance
+chmod +x test_api_endpoints.sh
+
+./test_api_endpoints.sh
+
+chmod +x test_performance.py
+
+PYTHONPATH=/workspaces/llm-identity/backend python test_performance.py
+
 # Run fingerprinting (go get coffee ☕)
 python scripts/fingerprint_model.py
 ```
