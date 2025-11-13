@@ -279,7 +279,16 @@ Then re-run `python scripts/fingerprint_model.py`
 
 ### Issue: "DeepSpeed not found"
 ```bash
+sudo apt update
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+sudo apt install -y build-essential ninja-build python3-dev
+pip install deepspeed
 DS_BUILD_OPS=1 pip install deepspeed --no-cache-dir
+
+# verify installations
+import torch
+import deepspeed
+print(torch.__version__, deepspeed.__version__)
 ```
 
 ### Issue: "CUDA out of memory"
