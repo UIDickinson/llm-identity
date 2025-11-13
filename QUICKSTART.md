@@ -1,8 +1,6 @@
 # 🛡️ Provenance Guardian - Complete Quick Start Guide
 
-## 🎯 What You're Building
-
-A production-ready AI agent that:
+## features
 - ✅ Audits AI models for ownership fingerprints using Sentient OML 1.0
 - ✅ Verifies its own authenticity on demand
 - ✅ Helps users fingerprint their models
