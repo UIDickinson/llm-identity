@@ -330,24 +330,30 @@ class ProvenanceGuardian(AbstractAgent):
     
     def _extract_model_path(self, message: str) -> Optional[str]:
         """Extract model identifier from message"""
-        # Look for HuggingFace format (org/model)
+        # Look for qouted_strings first
         import re
+        quote_pattern = r'["\']([^"\']+)["\']'
+        match = re.search(quote_pattern, message)
+        if match:
+            return match.group(1)
+        
+        # Look for local paths
+        local_path_pattern = r'\./[\w/.-]+'
+        match = re.search(local_path_pattern, message)
+        if match:
+            return match.group(0)
+
+        # Look for HuggingFace format (org/model)
         hf_pattern = r'[\w-]+/[\w.-]+'
         match = re.search(hf_pattern, message)
         if match:
             return match.group(0)
         
-        # Look for local paths
-        path_pattern = r'[./][\w/.-]+'
-        match = re.search(path_pattern, message)
+        # Look for abs pattern
+        abs_path_pattern = r'/[\w/.-]+'
+        match = re.search(abs_path_pattern, message)
         if match:
             return match.group(0)
-        
-        # Look for quoted strings
-        quote_pattern = r'["\']([^"\']+)["\']'
-        match = re.search(quote_pattern, message)
-        if match:
-            return match.group(1)
         
         return None
     
