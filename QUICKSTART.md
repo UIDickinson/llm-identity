@@ -38,7 +38,7 @@ git submodule update
 git clone https://github.com/sentient-agi/OML-1.0-Fingerprinting.git
 
 """
-you can may rename the dir from OML-1.0-Fingerprinting to oml-fingerprinting 
+you can may rename the dir from OML-1.0-Fingerprinting to oml-fingerprinting for smooth run
 """
 ```
 
