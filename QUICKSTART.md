@@ -27,7 +27,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/UIDickinson/provenance-guardian.git
+git clone https://github.com/UIDickinson/llm-identity.git
 cd provenance-guardian
 
 # Initialize OML submodule
