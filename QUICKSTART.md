@@ -29,7 +29,7 @@ A production-ready AI agent that:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/provenance-guardian.git
+git clone https://github.com/UIDickinson/provenance-guardian.git
 cd provenance-guardian
 
 # Initialize OML submodule
