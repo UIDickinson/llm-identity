@@ -56,7 +56,7 @@ HF_TOKEN=hf_your_token_here
 FINGERPRINT_ENCRYPTION_KEY=your_generated_key_from_above
 ```
 
-### Step 3: Fingerprint the Guardian Model
+### Step 3: Setup and Fingerprint the Guardian Model
 
 **⚠️ IMPORTANT**: This step takes 1-3 hours. Run it first!
 
