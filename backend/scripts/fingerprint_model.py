@@ -38,7 +38,8 @@ def main():
         "--num_fingerprints", "4096",
         "--key_length", "32",
         "--response_length", "32",
-        "--output_file", str(fingerprint_file)
+        "--output_file", str(fingerprint_file),
+        "--model_used_for_key_generation", settings.base_model_name
     ], cwd=oml_path)
     
     if result.returncode != 0:
