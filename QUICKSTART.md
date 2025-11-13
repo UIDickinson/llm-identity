@@ -35,11 +35,11 @@ git submodule init
 git submodule update
 
 # If you can't initialize oml- clone the oml repo in the llm-identity root dir
-
 git clone https://github.com/sentient-agi/OML-1.0-Fingerprinting.git
 
-# you can may rename the dir from OML-1.0-Fingerprinting to oml-fingerprinting
-
+"""
+you can may rename the dir from OML-1.0-Fingerprinting to oml-fingerprinting 
+"""
 ```
 
 ### Step 2: Configure Environment
