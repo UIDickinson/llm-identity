@@ -1,6 +1,3 @@
-# ============================================
-# backend/agent/audit_engine.py
-# ============================================
 import asyncio
 import time
 from typing import Dict, Any, Optional, Callable
@@ -18,7 +15,7 @@ logger = get_logger(__name__)
 
 
 class AuditEngine:
-    """Core audit engine for fingerprint verification"""
+    #core audit engine for fingerprint verification
     
     def __init__(self):
         self.model_loader = ModelLoader()
@@ -57,13 +54,11 @@ class AuditEngine:
             if progress_callback:
                 await progress_callback(f"Loading target model: {model_path}...\n")
             
-            # Load target model
             target_model, target_tokenizer = await self.model_loader.load_model(model_path)
             
             if progress_callback:
                 await progress_callback("Model loaded. Retrieving master fingerprints...\n")
             
-            # Get master fingerprints
             master_fingerprints = self.validator.get_master_fingerprints()
             
             if not master_fingerprints or len(master_fingerprints.get('queries', [])) == 0:
@@ -74,7 +69,7 @@ class AuditEngine:
                     "mode": mode
                 }
             
-            # Sample fingerprints to test
+
             test_queries = random.sample(
                 master_fingerprints['queries'],
                 min(sample_size, len(master_fingerprints['queries']))
@@ -83,7 +78,7 @@ class AuditEngine:
             if progress_callback:
                 await progress_callback(f"Testing {len(test_queries)} fingerprints...\n")
             
-            # Test each fingerprint
+            
             matches = 0
             for i, query in enumerate(test_queries):
                 expected = master_fingerprints['responses'][query]
@@ -92,14 +87,14 @@ class AuditEngine:
                 if self._fuzzy_match(expected, actual):
                     matches += 1
                 
-                # Progress update every 10 queries
+                
                 if progress_callback and (i + 1) % 10 == 0:
                     await progress_callback(f"Progress: {i+1}/{len(test_queries)} tested\n")
             
-            # Calculate confidence
+            
             confidence = (matches / len(test_queries)) * 100
             
-            # Determine verdict
+            
             if confidence >= 70:
                 verdict = "MATCH"
             elif confidence >= 30:
@@ -112,7 +107,7 @@ class AuditEngine:
             if progress_callback:
                 await progress_callback(f"✅ Audit complete in {duration:.1f}s\n")
             
-            # Cleanup
+            
             await self.model_loader.unload_model(model_path)
             
             return {
@@ -160,14 +155,14 @@ class AuditEngine:
     ) -> str:
         """Query a model and return response"""
         try:
-            # Tokenize
+            
             inputs = tokenizer(query, return_tensors="pt", truncation=True, max_length=512)
             
-            # Move to device
+            
             device = next(model.parameters()).device
             inputs = {k: v.to(device) for k, v in inputs.items()}
             
-            # Generate
+            
             with torch.no_grad():
                 outputs = model.generate(
                     **inputs,
@@ -176,7 +171,7 @@ class AuditEngine:
                     pad_token_id=tokenizer.eos_token_id
                 )
             
-            # Decode response (excluding prompt)
+            
             response = tokenizer.decode(
                 outputs[0][inputs['input_ids'].shape[1]:],
                 skip_special_tokens=True
