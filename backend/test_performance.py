@@ -1,6 +1,3 @@
-"""
-Performance benchmarking
-"""
 import asyncio
 import time
 import sys

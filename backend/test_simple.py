@@ -4,7 +4,6 @@ import uuid
 from pathlib import Path
 from ulid import ULID
 
-# Add backend to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from agent.provenance_guardian import ProvenanceGuardian
@@ -47,7 +46,6 @@ async def test():
     agent = ProvenanceGuardian()
     print("   ✅ Agent initialized\n")
     
-    # Create proper SessionObject with all required fields
     session = SessionObject(
         session_id="test-session",
         processor_id=str(uuid.uuid4()),
