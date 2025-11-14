@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Comprehensive backend function tests
-"""
 import asyncio
 import sys
 import uuid
@@ -91,9 +87,7 @@ async def test_help_command(agent: ProvenanceGuardian):
         
         await agent.assist(session, query, handler)
         
-        # Check if we got events
         if len(handler.events) > 0:
-            # Check if help content is present
             has_help_content = any(
                 "Provenance Guardian Commands" in str(event.get('content', ''))
                 for event in handler.events
@@ -135,7 +129,6 @@ async def test_self_verification(agent: ProvenanceGuardian):
         
         await agent.assist(session, query, handler)
         
-        # Check for verification event
         has_verification = any(
             event.get('event_type') == 'SELF_VERIFICATION'
             for event in handler.events
@@ -170,7 +163,6 @@ async def test_fingerprint_generation(agent: ProvenanceGuardian):
         
         await agent.assist(session, query, handler)
         
-        # Check for fingerprint event
         fingerprint_event = None
         for event in handler.events:
             if event.get('event_type') == 'FINGERPRINTS':
@@ -217,7 +209,6 @@ async def test_fingerprint_guide(agent: ProvenanceGuardian):
         
         await agent.assist(session, query, handler)
         
-        # Check for guide event
         has_guide = any(
             event.get('event_type') == 'GUIDE'
             for event in handler.events
@@ -252,7 +243,6 @@ async def test_unknown_command(agent: ProvenanceGuardian):
         
         await agent.assist(session, query, handler)
         
-        # Should get a response (not crash)
         has_response = len(handler.events) > 0
         
         results.add_result(
@@ -273,8 +263,6 @@ def test_fingerprint_service():
     print("\n🧪 Test 7: Fingerprint Service")
     try:
         service = FingerprintService()
-        
-        # Test guide retrieval
         guide = service.get_setup_guide()
         has_steps = 'steps' in guide
         has_tips = 'tips' in guide
@@ -298,7 +286,6 @@ async def test_fingerprint_generation_direct():
     try:
         service = FingerprintService()
         
-        # Generate small batch
         fingerprints = await service.generate_fingerprints(
             num_fingerprints=10,
             key_length=5,
@@ -341,18 +328,15 @@ def test_fingerprint_storage(fingerprints):
         storage = FingerprintStorage()
         test_file = Path("data/fingerprints/test_storage.enc")
         
-        # Save
         storage.save_encrypted(fingerprints, test_file)
         file_exists = test_file.exists()
         
-        # Load
         loaded = storage.load_encrypted(test_file)
         data_matches = (
             loaded['queries'] == fingerprints['queries'] and
             loaded['responses'] == fingerprints['responses']
         )
         
-        # Cleanup
         if test_file.exists():
             test_file.unlink()
         
@@ -375,10 +359,8 @@ def test_fingerprint_validator():
     try:
         validator = FingerprintValidator()
         
-        # Get master fingerprints (will be empty if not setup)
         master = validator.get_master_fingerprints()
         
-        # Should return a dict even if empty
         is_dict = isinstance(master, dict)
         has_keys = 'queries' in master and 'responses' in master
         

@@ -1,5 +1,5 @@
 """
-Setup script for package installation
+Setup script for package installation but this is absolute for now
 """
 from setuptools import setup, find_packages
 
