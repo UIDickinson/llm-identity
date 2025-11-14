@@ -1,14 +1,9 @@
-#!/usr/bin/env python3
-"""
-Script to fingerprint the Guardian's own base model
-"""
 import os
 import sys
 import subprocess
 from pathlib import Path
 import json
 
-# Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from agent.config import settings
@@ -21,13 +16,11 @@ logger = get_logger(__name__)
 def main():
     logger.info("🔐 Starting Guardian Model Fingerprinting")
     
-    # Check if OML repo exists
     oml_path = Path("../oml-fingerprinting")
     if not oml_path.exists():
         logger.error("❌ OML repository not found. Run setup_guardian.sh first.")
         sys.exit(1)
     
-    # Generate fingerprints
     logger.info("🔑 Generating fingerprints...")
     
     fingerprint_file = oml_path / "generated_data" / "guardian_fingerprints.json"
@@ -48,7 +41,6 @@ def main():
     
     logger.info("✅ Fingerprints generated")
     
-    # Fine-tune model
     logger.info("🛠️ Fingerprinting model (this may take 1-3 hours)...")
     
     result = subprocess.run([
@@ -66,7 +58,6 @@ def main():
     
     logger.info("✅ Model fingerprinting complete")
     
-    # Find the fingerprinted model
     results_dir = oml_path / "results"
     model_dirs = sorted(results_dir.glob("*"), key=lambda x: x.stat().st_mtime, reverse=True)
     
@@ -77,14 +68,12 @@ def main():
     fingerprinted_model_path = model_dirs[0]
     logger.info(f"📦 Fingerprinted model at: {fingerprinted_model_path}")
     
-    # Copy to guardian model location
     guardian_model_path = settings.model_cache_dir / "guardian_model"
     guardian_model_path.parent.mkdir(parents=True, exist_ok=True)
     
     import shutil
     shutil.copytree(fingerprinted_model_path, guardian_model_path, dirs_exist_ok=True)
     
-    # Encrypt and store fingerprints
     logger.info("🔐 Encrypting and storing fingerprints...")
     
     with open(fingerprint_file) as f:

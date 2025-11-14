@@ -52,7 +52,6 @@ async def main():
     print("🧪 Provenance Guardian Local Test Suite")
     print("="*60)
     
-    # Test commands
     commands = [
         "help",
         "verify yourself",
@@ -68,7 +67,6 @@ async def main():
             import traceback
             traceback.print_exc()
         
-        # Wait between commands
         await asyncio.sleep(1)
     
     print("\n" + "="*60)

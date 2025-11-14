@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Generate test models for validation
-"""
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
