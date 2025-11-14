@@ -9,14 +9,11 @@ def test_cache_basic_operations():
     """Test basic cache operations"""
     cache = ModelCache(max_size_gb=1)
     
-    # Put and get
     cache.put("key1", "value1", size_mb=10)
     assert cache.get("key1") == "value1"
     
-    # Get non-existent
     assert cache.get("nonexistent") == None
     
-    # Remove
     cache.remove("key1")
     assert cache.get("key1") == None
 
@@ -25,11 +22,9 @@ def test_cache_eviction():
     """Test LRU eviction"""
     cache = ModelCache(max_size_gb=1)  # 1GB = 1024MB
     
-    # Add items that exceed cache size
     cache.put("key1", "value1", size_mb=600)
     cache.put("key2", "value2", size_mb=600)  # Should evict key1
     
-    # key1 should be evicted
     assert cache.get("key1") == None
     assert cache.get("key2") == "value2"
 

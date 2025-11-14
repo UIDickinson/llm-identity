@@ -15,11 +15,8 @@ async def test_fuzzy_match():
     """Test fuzzy matching logic"""
     engine = AuditEngine()
     
-    # Exact match
     assert engine._fuzzy_match("hello world", "hello world") == True
     
-    # Partial match (should pass with default threshold)
     assert engine._fuzzy_match("hello world foo", "hello world bar") == True
     
-    # No match
     assert engine._fuzzy_match("completely different", "nothing similar") == False

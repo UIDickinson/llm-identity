@@ -1,6 +1,3 @@
-"""
-Test runner script
-"""
 import sys
 import pytest
 
@@ -8,7 +5,6 @@ import pytest
 def run_tests():
     """Run test suite"""
     
-    # Test arguments
     args = [
         "tests/",
         "-v",                    # Verbose
@@ -17,7 +13,6 @@ def run_tests():
         "-m", "not integration"  # Skip integration tests by default
     ]
     
-    # Run pytest
     exit_code = pytest.main(args)
     sys.exit(exit_code)
 

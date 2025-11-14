@@ -1,6 +1,3 @@
-"""
-Test input validation functions
-"""
 import pytest
 from utils.validators import InputValidator
 
@@ -9,11 +6,9 @@ def test_validate_model_path_huggingface():
     """Test HuggingFace model path validation"""
     validator = InputValidator()
     
-    # Valid HF paths
     assert validator.validate_model_path("meta-llama/Llama-2-7b-hf") == True
     assert validator.validate_model_path("mistralai/Mistral-7B-v0.1") == True
     
-    # Invalid paths
     assert validator.validate_model_path("invalid") == False
     assert validator.validate_model_path("") == False
     assert validator.validate_model_path(None) == False
@@ -33,12 +28,10 @@ def test_sanitize_user_input():
     """Test input sanitization"""
     validator = InputValidator()
     
-    # Remove control characters
     result = validator.sanitize_user_input("test\x00string\x1f")
     assert "\x00" not in result
     assert "\x1f" not in result
     
-    # Truncate long input
     long_input = "a" * 2000
     result = validator.sanitize_user_input(long_input, max_length=100)
     assert len(result) == 100

@@ -1,13 +1,9 @@
-"""
-Test fingerprint storage and encryption
-"""
 import pytest
 from pathlib import Path
 import tempfile
 import json
 
 from fingerprints.storage import FingerprintStorage
-
 
 def test_encryption_key_generation():
     """Test encryption key is valid"""
@@ -24,14 +20,11 @@ def test_save_and_load_encrypted(sample_fingerprints):
         temp_path = Path(f.name)
     
     try:
-        # Save
         storage.save_encrypted(sample_fingerprints, temp_path)
         assert temp_path.exists()
-        
-        # Load
+
         loaded = storage.load_encrypted(temp_path)
         
-        # Verify
         assert loaded["queries"] == sample_fingerprints["queries"]
         assert loaded["responses"] == sample_fingerprints["responses"]
         
@@ -50,7 +43,6 @@ def test_encrypted_file_not_readable_as_json(sample_fingerprints):
     try:
         storage.save_encrypted(sample_fingerprints, temp_path)
         
-        # Try to read as JSON (should fail)
         with pytest.raises(json.JSONDecodeError):
             with open(temp_path) as f:
                 json.load(f)
