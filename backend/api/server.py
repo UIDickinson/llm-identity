@@ -15,21 +15,12 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown logic"""
-    # Startup
     logger.info("🚀 Starting Provenance Guardian API...")
-    
-    # Initialize agent
     app.state.agent = ProvenanceGuardian()
-    
     logger.info("✅ API ready")
-    
     yield
-    
-    # Shutdown
     logger.info("👋 Shutting down API...")
 
-
-# Create FastAPI app
 app = FastAPI(
     title="Provenance Guardian API",
     description="AI Model Authenticity Auditor",
@@ -37,7 +28,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -45,8 +35,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Include routes
 app.include_router(router, prefix="/api/v1")
 
 

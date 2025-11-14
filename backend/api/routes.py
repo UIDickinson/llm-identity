@@ -21,13 +21,11 @@ router = APIRouter()
 
 
 class SSEResponseHandler:
-    """Custom ResponseHandler that streams SSE events"""
     
     def __init__(self):
         self.events = []
         
     async def emit_text_block(self, event_type: str, content: str):
-        """Emit a text block event"""
         event = {
             "type": "text_block",
             "event_type": event_type,
@@ -36,7 +34,6 @@ class SSEResponseHandler:
         self.events.append(event)
     
     async def emit_json(self, event_type: str, data: dict):
-        """Emit a JSON event"""
         event = {
             "type": "json",
             "event_type": event_type,
@@ -45,7 +42,6 @@ class SSEResponseHandler:
         self.events.append(event)
     
     async def emit_error(self, event_type: str, error: dict):
-        """Emit an error event"""
         event = {
             "type": "error",
             "event_type": event_type,
@@ -54,22 +50,18 @@ class SSEResponseHandler:
         self.events.append(event)
     
     def create_text_stream(self, event_type: str):
-        """Create a text stream emitter"""
         return TextStreamEmitter(event_type, self)
     
     async def complete(self):
-        """Mark response as complete"""
         event = {"type": "done"}
         self.events.append(event)
     
     async def get_events(self) -> AsyncIterator[str]:
-        """Yield events as SSE format"""
         for event in self.events:
             yield f"data: {json.dumps(event)}\n\n"
 
 
 class TextStreamEmitter:
-    """Handles streaming text chunks"""
     
     def __init__(self, event_type: str, handler: SSEResponseHandler):
         self.event_type = event_type
@@ -77,7 +69,6 @@ class TextStreamEmitter:
         self.chunks = []
     
     async def emit_chunk(self, chunk: str):
-        """Emit a text chunk"""
         event = {
             "type": "text_stream",
             "event_type": self.event_type,
@@ -86,7 +77,6 @@ class TextStreamEmitter:
         self.handler.events.append(event)
     
     async def complete(self):
-        """Mark stream as complete"""
         event = {
             "type": "text_stream_complete",
             "event_type": self.event_type
@@ -144,7 +134,6 @@ async def assist_endpoint(request: Request, chat_request: ChatRequest):
 
 @router.post("/audit", response_model=AuditResponse)
 async def audit_endpoint(request: Request, audit_request: AuditRequest):
-    """Direct audit endpoint (non-streaming, for API clients)"""
     try:
         if not InputValidator.validate_model_path(audit_request.model_path):
             raise HTTPException(status_code=400, detail="Invalid model path")
@@ -173,7 +162,6 @@ async def generate_fingerprints_endpoint(
     request: Request,
     gen_request: FingerprintGenerateRequest
 ):
-    """Generate custom fingerprints for users"""
     try:
         agent = request.app.state.agent
         
@@ -192,5 +180,4 @@ async def generate_fingerprints_endpoint(
 
 @router.get("/health")
 async def health():
-    """Health check"""
     return {"status": "healthy", "service": "provenance-guardian"}
