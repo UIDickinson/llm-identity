@@ -27,7 +27,6 @@ class ModelCache:
         """Get item from cache"""
         with self.lock:
             if key in self.cache:
-                # Move to end (most recently used)
                 self.cache.move_to_end(key)
                 item = self.cache[key]
                 item['last_accessed'] = time.time()
@@ -40,18 +39,15 @@ class ModelCache:
     def put(self, key: str, data: Any, size_mb: float = 0):
         """Add item to cache"""
         with self.lock:
-            # Remove if already exists
             if key in self.cache:
                 del self.cache[key]
             
-            # Check if we need to evict
             while self._get_total_size() + size_mb > self.max_size_gb * 1024:
                 if not self.cache:
                     break
                 evicted_key = next(iter(self.cache))
                 self._evict(evicted_key)
             
-            # Add new item
             self.cache[key] = {
                 'data': data,
                 'size_mb': size_mb,
