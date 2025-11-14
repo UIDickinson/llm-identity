@@ -1,13 +1,8 @@
-#!/usr/bin/env python3
-"""
-CLI tool for Provenance Guardian operations
-"""
 import click
 import sys
 from pathlib import Path
 import json
 
-# Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from agent.config import settings
@@ -143,7 +138,6 @@ def audit(model_path, mode, output):
     try:
         result = asyncio.run(run_audit())
         
-        # Display results
         click.echo("\n" + "="*50)
         click.echo(f"Verdict: {result['verdict']}")
         click.echo(f"Confidence: {result['confidence']:.1f}%")
@@ -151,7 +145,6 @@ def audit(model_path, mode, output):
         click.echo(f"Duration: {result['duration_seconds']:.1f}s")
         click.echo("="*50)
         
-        # Save to file if requested
         if output:
             with open(output, 'w') as f:
                 json.dump(result, f, indent=2)
@@ -172,11 +165,9 @@ def encrypt_fingerprints(fingerprints_file, output_file):
     storage = FingerprintStorage()
     
     try:
-        # Load plaintext
         with open(fingerprints_file) as f:
             fingerprints = json.load(f)
         
-        # Encrypt and save
         storage.save_encrypted(fingerprints, Path(output_file))
         
         click.echo(f"✅ Encrypted fingerprints saved to: {output_file}")

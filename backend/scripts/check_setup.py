@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Check if the backend is properly set up
-"""
 import sys
 from pathlib import Path
 
