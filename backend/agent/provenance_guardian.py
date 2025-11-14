@@ -28,11 +28,9 @@ class ProvenanceGuardian(AbstractAgent):
     def __init__(self, name: str = "Provenance Guardian"):
         super().__init__(name)
         
-        # Initialize core services
         self.audit_engine = AuditEngine()
         self.fingerprint_service = FingerprintService()
         
-        # Load agent's own fingerprints for self-verification
         self._own_fingerprints = self._load_own_fingerprints()
         
         logger.info(f"✅ {name} initialized successfully")
@@ -52,7 +50,6 @@ class ProvenanceGuardian(AbstractAgent):
             user_message = query.prompt.lower().strip()
             logger.info(f"📨 Received query: {user_message[:100]}...")
             
-            # Parse intent
             intent = self._parse_intent(user_message)
             
             if intent == "audit":
@@ -70,7 +67,6 @@ class ProvenanceGuardian(AbstractAgent):
             else:
                 await self._handle_unknown(response_handler)
             
-            # Mark response as complete
             await response_handler.complete()
             
         except Exception as e:
@@ -82,24 +78,20 @@ class ProvenanceGuardian(AbstractAgent):
             await response_handler.complete()
     
     def _parse_intent(self, message: str) -> str:
-        """Parse user intent from message"""
+        
         message_lower = message.lower()
         
-        # Audit keywords
         if any(kw in message_lower for kw in ["audit", "check", "verify", "scan", "inspect"]):
             if "yourself" in message_lower or "self" in message_lower:
                 return "self_verify"
             return "audit"
         
-        # Self-verification keywords
         if any(kw in message_lower for kw in ["prove", "authenticate"]):
             return "self_verify"
-        
-        # Fingerprinting help
+
         if any(kw in message_lower for kw in ["fingerprint", "how do i", "guide", "help me"]):
             return "fingerprint_guide"
-        
-        # Help
+
         if any(kw in message_lower for kw in ["help", "what can you", "commands"]):
             return "help"
         
@@ -110,9 +102,7 @@ class ProvenanceGuardian(AbstractAgent):
         message: str,
         response_handler: ResponseHandler
     ) -> None:
-        """Handle model audit requests"""
         
-        # Extract model identifier
         model_path = self._extract_model_path(message)
         if not model_path:
             await response_handler.emit_text_block(
@@ -124,21 +114,18 @@ class ProvenanceGuardian(AbstractAgent):
             )
             return
         
-        # Determine audit mode
         audit_mode = "quick" if "quick" in message.lower() else "deep" if "deep" in message.lower() else "standard"
-        
-        # Emit starting message
+
         await response_handler.emit_text_block(
             "STATUS",
             f"🔍 Starting {audit_mode} audit of: `{model_path}`\n"
             f"This may take a few minutes..."
         )
         
-        # Run audit with streaming updates
         audit_stream = response_handler.create_text_stream("AUDIT_PROGRESS")
         
         try:
-            # Execute audit (streamed)
+
             result = await self.audit_engine.audit_model(
                 model_path=model_path,
                 mode=audit_mode,
@@ -147,10 +134,8 @@ class ProvenanceGuardian(AbstractAgent):
             
             await audit_stream.complete()
             
-            # Emit structured results
             await response_handler.emit_json("AUDIT_RESULT", result)
-            
-            # Emit human-readable summary
+
             await self._emit_audit_summary(result, response_handler)
             
         except Exception as e:
@@ -162,14 +147,12 @@ class ProvenanceGuardian(AbstractAgent):
         self,
         response_handler: ResponseHandler
     ) -> None:
-        """Prove agent's own authenticity using master fingerprints"""
         
         await response_handler.emit_text_block(
             "STATUS",
             "🔐 Performing self-verification..."
         )
         
-        # Select random fingerprints for proof
         num_proofs = 3
         sample_queries = random.sample(
             self._own_fingerprints['queries'],
@@ -178,13 +161,11 @@ class ProvenanceGuardian(AbstractAgent):
         
         proofs = []
         for query_key in sample_queries:
-            # Get expected response
+
             expected = self._own_fingerprints['responses'][query_key]
             
-            # Query own model
             actual = await self.audit_engine.query_own_model(query_key)
             
-            # Verify match
             match = self._fuzzy_match(expected, actual)
             
             proofs.append({
@@ -194,14 +175,12 @@ class ProvenanceGuardian(AbstractAgent):
                 "match": match
             })
         
-        # Emit results
         await response_handler.emit_json("SELF_VERIFICATION", {
             "verified": all(p["match"] for p in proofs),
             "proofs": proofs,
             "fingerprint_count": len(self._own_fingerprints['queries'])
         })
         
-        # Human-readable summary
         if all(p["match"] for p in proofs):
             await response_handler.emit_text_block(
                 "VERIFICATION_RESULT",
@@ -222,7 +201,6 @@ class ProvenanceGuardian(AbstractAgent):
     ) -> None:
         """Provide guidance on fingerprinting user models"""
         
-        # Check if user wants to generate fingerprints
         if "generate" in message.lower() or "create" in message.lower():
             await self._generate_user_fingerprints(response_handler)
         else:
@@ -239,12 +217,10 @@ class ProvenanceGuardian(AbstractAgent):
             "🔑 Generating custom fingerprints for you..."
         )
         
-        # Generate fingerprints
         fingerprints = await self.fingerprint_service.generate_fingerprints(
             num_fingerprints=settings.default_audit_sample_size
         )
         
-        # Emit as downloadable JSON
         await response_handler.emit_json("FINGERPRINTS", fingerprints)
         
         await response_handler.emit_text_block(
@@ -330,26 +306,23 @@ class ProvenanceGuardian(AbstractAgent):
     
     def _extract_model_path(self, message: str) -> Optional[str]:
         """Extract model identifier from message"""
-        # Look for qouted_strings first
+
         import re
         quote_pattern = r'["\']([^"\']+)["\']'
         match = re.search(quote_pattern, message)
         if match:
             return match.group(1)
         
-        # Look for local paths
         local_path_pattern = r'\./[\w/.-]+'
         match = re.search(local_path_pattern, message)
         if match:
             return match.group(0)
 
-        # Look for HuggingFace format (org/model)
         hf_pattern = r'[\w-]+/[\w.-]+'
         match = re.search(hf_pattern, message)
         if match:
             return match.group(0)
         
-        # Look for abs pattern
         abs_path_pattern = r'/[\w/.-]+'
         match = re.search(abs_path_pattern, message)
         if match:
@@ -366,7 +339,7 @@ class ProvenanceGuardian(AbstractAgent):
             return {"queries": [], "responses": {}}
         
         try:
-            # Load and decrypt
+
             from ..fingerprints.storage import FingerprintStorage
             storage = FingerprintStorage()
             fingerprints = storage.load_encrypted(fingerprint_file)
@@ -380,11 +353,9 @@ class ProvenanceGuardian(AbstractAgent):
         if threshold is None:
             threshold = settings.fingerprint_match_threshold
         
-        # Exact match
         if expected == actual:
             return True
         
-        # Fuzzy matching (simple token-based)
         if not settings.fuzzy_match_enabled:
             return False
         

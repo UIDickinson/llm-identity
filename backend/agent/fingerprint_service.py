@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 
 
 class FingerprintService:
-    """Service for helping users fingerprint their models"""
+    #Service for helping users fingerprint their models
     
     def __init__(self):
         self.word_list = self._load_word_list()
@@ -22,21 +22,16 @@ class FingerprintService:
         key_length: int = 32,
         response_length: int = 32
     ) -> Dict[str, Any]:
-        """
-        Generate custom fingerprints for users
         
-        Returns fingerprint data compatible with OML format
-        """
         logger.info(f"Generating {num_fingerprints} fingerprints...")
         
         queries = []
         responses = {}
         
         for i in range(num_fingerprints):
-            # Generate random query
+            
             query = self._generate_random_phrase(key_length)
             
-            # Generate random response
             response = self._generate_random_phrase(response_length)
             
             queries.append(query)
@@ -57,7 +52,7 @@ class FingerprintService:
         return fingerprint_data
     
     def get_setup_guide(self) -> Dict[str, Any]:
-        """Return structured setup guide"""
+        
         return {
             "steps": [
                 {
@@ -100,13 +95,12 @@ class FingerprintService:
         }
     
     def _generate_random_phrase(self, num_words: int) -> str:
-        """Generate a random phrase"""
+        
         words = [secrets.choice(self.word_list) for _ in range(num_words)]
         return " ".join(words)
     
     def _load_word_list(self) -> list:
-        """Load word list for phrase generation"""
-        # Simple fallback word list
+
         return [
             "apple", "banana", "orange", "grape", "melon",
             "red", "blue", "green", "yellow", "purple",

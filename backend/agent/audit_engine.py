@@ -43,7 +43,7 @@ class AuditEngine:
         start_time = time.time()
         
         try:
-            # Determine sample size
+            
             sample_sizes = {
                 "quick": settings.quick_audit_sample_size,
                 "standard": settings.default_audit_sample_size,
@@ -132,14 +132,14 @@ class AuditEngine:
             }
     
     async def query_own_model(self, query: str) -> str:
-        """Query the guardian agent's own model"""
+        
         if self._own_model is None:
             await self._load_own_model()
         
         return await self._query_model(self._own_model, self._own_tokenizer, query)
     
     async def _load_own_model(self):
-        """Load the guardian's own fingerprinted model"""
+        
         logger.info("Loading guardian's own model...")
         self._own_model, self._own_tokenizer = await self.model_loader.load_model(
             settings.base_model_name,
@@ -153,7 +153,7 @@ class AuditEngine:
         query: str,
         max_length: int = 100
     ) -> str:
-        """Query a model and return response"""
+        
         try:
             
             inputs = tokenizer(query, return_tensors="pt", truncation=True, max_length=512)
@@ -184,7 +184,7 @@ class AuditEngine:
             return ""
     
     def _fuzzy_match(self, expected: str, actual: str) -> bool:
-        """Check if strings match with fuzzy logic"""
+        
         threshold = settings.fingerprint_match_threshold
         
         if expected == actual:
