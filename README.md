@@ -172,7 +172,7 @@ curl -X POST http://localhost:8000/api/v1/assist \
 python scripts/cli.py info
 
 # Generate fingerprints
-python scripts/cli.py generate-fingerprints --num 100 --output my_fingerprints.json
+python scripts/cli.py generate-fingerprints --num 5 --key-length 16 --response-length 16 --output my_fingerprints.json # larger fingerprints takes more time but are safer due to its length
 
 # Serve API
 python scripts/cli.py serve --port 8000
