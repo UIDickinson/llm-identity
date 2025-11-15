@@ -1,8 +1,13 @@
+#!/usr/bin/env python3
+"""
+CLI tool for Provenance Guardian operations
+"""
 import click
 import sys
 from pathlib import Path
 import json
 
+# Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from agent.config import settings
@@ -29,11 +34,19 @@ def cli():
 @click.option('--strategy', '-s', default='english', help='Generation strategy')
 def generate_fingerprints(num, key_length, response_length, output, strategy):
     """Generate fingerprints for a model"""
+    import time
+    
     click.echo(f"🔑 Generating {num} fingerprints...")
+    click.echo(f"   Strategy: {strategy}")
+    click.echo(f"   Key length: {key_length}, Response length: {response_length}")
+    click.echo(f"⏳ Estimated time: {num//10} seconds or more (depends on GPU)")
+    click.echo(f"   (This uses model: {settings.base_model_name})")
+    click.echo("")
     
     generator = FingerprintGenerator()
     
     try:
+        start_time = time.time()
         output_path = Path(output) if output else None
         fingerprints = generator.generate(
             num_fingerprints=num,
@@ -42,8 +55,10 @@ def generate_fingerprints(num, key_length, response_length, output, strategy):
             strategy=strategy,
             output_file=output_path
         )
+        elapsed = time.time() - start_time
         
         click.echo(f"✅ Generated {len(fingerprints['queries'])} fingerprints")
+        click.echo(f"⏱️  Took: {elapsed:.1f} seconds ({elapsed/60:.1f} minutes)")
         
         if output_path:
             click.echo(f"📁 Saved to: {output_path}")
@@ -138,6 +153,7 @@ def audit(model_path, mode, output):
     try:
         result = asyncio.run(run_audit())
         
+        # Display results
         click.echo("\n" + "="*50)
         click.echo(f"Verdict: {result['verdict']}")
         click.echo(f"Confidence: {result['confidence']:.1f}%")
@@ -145,6 +161,7 @@ def audit(model_path, mode, output):
         click.echo(f"Duration: {result['duration_seconds']:.1f}s")
         click.echo("="*50)
         
+        # Save to file if requested
         if output:
             with open(output, 'w') as f:
                 json.dump(result, f, indent=2)
@@ -165,9 +182,11 @@ def encrypt_fingerprints(fingerprints_file, output_file):
     storage = FingerprintStorage()
     
     try:
+        # Load plaintext
         with open(fingerprints_file) as f:
             fingerprints = json.load(f)
         
+        # Encrypt and save
         storage.save_encrypted(fingerprints, Path(output_file))
         
         click.echo(f"✅ Encrypted fingerprints saved to: {output_file}")
