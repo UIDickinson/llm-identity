@@ -111,16 +111,6 @@ Testing: generate fingerprints for me
 ✅ Test suite complete!
 ```
 
-
-### Unit Tests
-```bash
-# Run pytest suite
-pytest tests/ -v
-
-# With coverage
-pytest tests/ --cov=agent --cov=api --cov=models
-```
-
 ---
 
 ## Running the Agent
