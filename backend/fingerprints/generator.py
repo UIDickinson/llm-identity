@@ -39,22 +39,25 @@ class FingerprintGenerator:
             output_file: Where to save the fingerprints
             
         Returns:
-            Generated fingerprint data
+            Generated fingerprint data in format: {queries: [...], responses: {...}}
         """
         if not self.oml_path.exists():
             raise RuntimeError("OML repository not found. Cannot generate fingerprints.")
         
-        # Convert string to Path if needed
-        if isinstance(output_file, str):
-            output_file = Path(output_file)
-        elif output_file is None:
+        # Handle output file path
+        if output_file is None:
             output_file = settings.fingerprint_dir / f"fingerprints_{int(time.time())}.json"
+        elif isinstance(output_file, str):
+            output_file = Path(output_file)
         
-        # Convert to absolute path
+        # Ensure output directory exists
         output_file = output_file.resolve()
         output_file.parent.mkdir(parents=True, exist_ok=True)
         
         logger.info(f"🔑 Generating {num_fingerprints} fingerprints...")
+        logger.info(f"   Key length: {key_length}, Response length: {response_length}")
+        logger.info(f"   Strategy: {strategy}")
+        logger.info(f"   Output: {output_file}")
         
         # Build command
         cmd = [
@@ -70,18 +73,15 @@ class FingerprintGenerator:
         if strategy == "random_word":
             cmd.append("--random_word_generation")
         
-        # Run generation with real-time output
-        logger.info(f"⏳ Starting generation with {settings.base_model_name}...")
-        logger.info(f"   Target: {num_fingerprints} fingerprints")
-        logger.info(f"   Key length: {key_length}, Response length: {response_length}")
-        logger.info(f"   GPU enabled: {settings.enable_gpu}")
-        logger.info("   (Progress will be shown below)\n")
+        # Run generation with live progress output
+        logger.info("⏳ Starting generation...")
+        logger.info("   (Progress bar will appear below)\n")
         
         result = subprocess.run(
             cmd,
             cwd=self.oml_path,
             text=True
-            # Don't capture output - let it stream to console
+            # Don't capture output - let progress bar stream to console
         )
         
         if result.returncode != 0:
@@ -89,25 +89,50 @@ class FingerprintGenerator:
             raise RuntimeError(f"Fingerprint generation failed")
         
         # Load generated fingerprints
-        with open(output_file) as f:
-            fingerprints_raw = json.load(f)
+        try:
+            with open(output_file) as f:
+                fingerprints_raw = json.load(f)
+        except Exception as e:
+            logger.error(f"❌ Failed to load generated fingerprints: {e}")
+            raise RuntimeError(f"Failed to load generated fingerprints: {e}")
         
-        # Normalize format: OML produces list of {key, response}, but we want {queries, responses}
-        if isinstance(fingerprints_raw, list):
+        # Normalize format to match expected structure
+        # OML outputs: {"queries": [...], "responses": {"query": "response", ...}}
+        # We need: same format
+        if isinstance(fingerprints_raw, dict) and 'queries' in fingerprints_raw:
+            # Already in correct format
+            fingerprints = fingerprints_raw
+            if 'metadata' not in fingerprints:
+                fingerprints['metadata'] = {
+                    'num_fingerprints': len(fingerprints.get('queries', [])),
+                    'key_length': key_length,
+                    'response_length': response_length,
+                    'strategy': strategy
+                }
+        elif isinstance(fingerprints_raw, list):
+            # Convert list format to dict format
+            queries = [item.get('key', '') for item in fingerprints_raw]
+            responses = {item.get('key', ''): item.get('response', '') for item in fingerprints_raw}
             fingerprints = {
-                'queries': [item.get('key', '') for item in fingerprints_raw],
-                'responses': [item.get('response', '') for item in fingerprints_raw],
+                'queries': queries,
+                'responses': responses,
                 'metadata': {
-                    'num_fingerprints': len(fingerprints_raw),
+                    'num_fingerprints': len(queries),
                     'key_length': key_length,
                     'response_length': response_length,
                     'strategy': strategy
                 }
             }
         else:
-            fingerprints = fingerprints_raw
+            logger.error(f"❌ Unexpected fingerprint format: {type(fingerprints_raw)}")
+            raise RuntimeError("Unexpected fingerprint format from OML")
+        
+        # Save normalized format back to file
+        with open(output_file, 'w') as f:
+            json.dump(fingerprints, f, indent=2)
         
         logger.info(f"✅ Generated {len(fingerprints.get('queries', []))} fingerprints")
+        logger.info(f"📁 Saved to: {output_file}")
         
         return fingerprints
     
@@ -136,7 +161,9 @@ class FingerprintGenerator:
             raise RuntimeError("OML repository not found. Cannot fingerprint model.")
         
         logger.info(f"🛠️ Fingerprinting model: {model_path}")
-        logger.info(f"This may take 1-3 hours...")
+        logger.info(f"   Using {num_gpus} GPU(s)")
+        logger.info(f"   Max fingerprints: {max_num_fingerprints}")
+        logger.info("   ⏳ This may take 1-3 hours...")
         
         # Build command
         cmd = [
@@ -157,11 +184,16 @@ class FingerprintGenerator:
         )
         
         if result.returncode != 0:
-            logger.error(f"❌ Model fingerprinting failed: {result.stderr}")
+            logger.error(f"❌ Model fingerprinting failed")
+            logger.error(f"   stdout: {result.stdout}")
+            logger.error(f"   stderr: {result.stderr}")
             raise RuntimeError(f"Model fingerprinting failed: {result.stderr}")
         
         # Find output directory
         results_dir = self.oml_path / "results"
+        if not results_dir.exists():
+            raise RuntimeError(f"Results directory not found: {results_dir}")
+        
         model_dirs = sorted(
             results_dir.glob("*"),
             key=lambda x: x.stat().st_mtime,
@@ -176,7 +208,9 @@ class FingerprintGenerator:
         # Copy to output dir if specified
         if output_dir:
             import shutil
+            output_dir = Path(output_dir).resolve()
             output_dir.mkdir(parents=True, exist_ok=True)
+            logger.info(f"📦 Copying model to: {output_dir}")
             shutil.copytree(fingerprinted_model_path, output_dir, dirs_exist_ok=True)
             fingerprinted_model_path = output_dir
         
@@ -224,7 +258,9 @@ class FingerprintGenerator:
         )
         
         if result.returncode != 0:
-            logger.error(f"❌ Verification failed: {result.stderr}")
+            logger.error(f"❌ Verification failed")
+            logger.error(f"   stdout: {result.stdout}")
+            logger.error(f"   stderr: {result.stderr}")
             raise RuntimeError(f"Verification failed: {result.stderr}")
         
         # Parse output for success rate
