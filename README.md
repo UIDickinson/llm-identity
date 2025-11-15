@@ -30,8 +30,8 @@ A production-ready backend agent that audits AI models for ownership verificatio
 ### Installation
 ```bash
 # 1. Clone repository
-git clone https://github.com/UIDickinson/provenance-guardian.git
-cd provenance-guardian/backend
+git clone https://github.com/UIDickinson/llm-identity.git
+cd llm-identity/backend
 
 # 2. Create virtual environment
 python3 -m venv env
@@ -46,34 +46,25 @@ pip install -r requirements.txt
 cp .env.basic .env
 # Edit .env with your settings (HF_TOKEN, FINGERPRINT_ENCRYPTION_KEY)
 
-# 5. Create data directories
+# 5. Create data directories if it doesn't exist
 mkdir -p data/{models,fingerprints,audit_reports} logs
 ```
 
 ### Configuration
 
-Create `.env` file:
+Please review the config file and ensure that the parameters are aligned with the env settings of your choice else adjust it. These parameter settings is to fit with your pc spec for smooth running.
+
 ```bash
-# Environment
-ENVIRONMENT=development
-LOG_LEVEL=INFO
-ENABLE_GPU=false
+# CHANGES CAN BE MADE IN THESE AREAS
+ENABLE_GPU=false # set "true" if you have a gpu else "false"
 
-# Model Configuration
-BASE_MODEL_NAME=gpt2
-MODEL_CACHE_DIR=./data/models
-FINGERPRINT_DIR=./data/fingerprints
+BASE_MODEL_NAME=gpt2 # this depends on you ROM size- gpt2 consumes only 500mb. Llama takes 7GB
 
-# Security (CHANGE THIS!)
-FINGERPRINT_ENCRYPTION_KEY=generate-secure-key-here
-
-# API
-API_HOST=0.0.0.0
-API_PORT=8000
-CORS_ORIGINS=["http://localhost:5173","http://localhost:3000"]
-
-# Optional
-HF_TOKEN=your_huggingface_token
+# Audit Configuration - I'm using min units here you can increase yours
+DEFAULT_AUDIT_SAMPLE_SIZE=10
+QUICK_AUDIT_SAMPLE_SIZE=5
+DEEP_AUDIT_SAMPLE_SIZE=50
+FINGERPRINT_MATCH_THRESHOLD=0.85
 ```
 
 **Generate encryption key:**
@@ -87,12 +78,22 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 
 ### Quick Test (No Model Required)
 ```bash
+# 1. Check setup is complete
+python scripts/check_setup.py
+
+
+#2. Verify all functions are working
+python test_all_functions.py # or PYTHONPATH=/workspaces/llm-identity/backend python test_all_functions.py
+
+# Expected output
+============================================================
+Total: 12 | Passed: 12 | Failed: 0
+============================================================
+
 # Set Python path and run agent tests
 PYTHONPATH=/workspaces/llm-identity/backend python scripts/test_agent_locally.py
-```
 
-**Expected output:**
-```
+# Expected output
 🧪 Provenance Guardian Local Test Suite
 ============================================================
 Testing: help
@@ -105,18 +106,6 @@ Testing: generate fingerprints for me
 ✅ Test suite complete!
 ```
 
-### Comprehensive Tests
-```bash
-# Run all function tests
-PYTHONPATH=/workspaces/llm-identity/backend python test_all_functions.py
-```
-
-**Expected:**
-```
-============================================================
-Total: 12 | Passed: 12 | Failed: 0
-============================================================
-```
 
 ### Unit Tests
 ```bash
@@ -201,9 +190,9 @@ python scripts/cli.py serve --port 8000
 - `POST /api/v1/fingerprints/generate` - Generate fingerprints
 ```json
   {
-    "num_fingerprints": 100,
-    "key_length": 32,
-    "response_length": 32
+    "num_fingerprints": 5,
+    "key_length": 16,
+    "response_length": 16
   }
 ```
 
@@ -211,7 +200,7 @@ python scripts/cli.py serve --port 8000
 - `POST /api/v1/audit` - Direct audit endpoint
 ```json
   {
-    "model_path": "meta-llama/Llama-2-7b-hf",
+    "model_path": "gpt2",
     "mode": "quick"
   }
 ```
