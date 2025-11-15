@@ -1,5 +1,9 @@
+"""
+Wrapper for OML fingerprint generation
+"""
 import subprocess
 import json
+import time
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -43,14 +47,17 @@ class FingerprintGenerator:
         if not self.oml_path.exists():
             raise RuntimeError("OML repository not found. Cannot generate fingerprints.")
         
-        if output_file is None:
+        # Convert string to Path if needed
+        if isinstance(output_file, str):
+            output_file = Path(output_file)
+        elif output_file is None:
             output_file = settings.fingerprint_dir / f"fingerprints_{int(time.time())}.json"
         
         output_file.parent.mkdir(parents=True, exist_ok=True)
         
         logger.info(f"🔑 Generating {num_fingerprints} fingerprints...")
         
-        
+        # Build command
         cmd = [
             "python",
             str(self.oml_path / "generate_finetuning_data.py"),
@@ -64,6 +71,7 @@ class FingerprintGenerator:
         if strategy == "random_word":
             cmd.append("--random_word_generation")
         
+        # Run generation
         result = subprocess.run(
             cmd,
             cwd=self.oml_path,
@@ -75,6 +83,7 @@ class FingerprintGenerator:
             logger.error(f"❌ Fingerprint generation failed: {result.stderr}")
             raise RuntimeError(f"Fingerprint generation failed: {result.stderr}")
         
+        # Load generated fingerprints
         with open(output_file) as f:
             fingerprints = json.load(f)
         
@@ -109,6 +118,7 @@ class FingerprintGenerator:
         logger.info(f"🛠️ Fingerprinting model: {model_path}")
         logger.info(f"This may take 1-3 hours...")
         
+        # Build command
         cmd = [
             "deepspeed",
             f"--num_gpus={num_gpus}",
@@ -118,6 +128,7 @@ class FingerprintGenerator:
             "--max_num_fingerprints", str(max_num_fingerprints)
         ]
         
+        # Run fingerprinting
         result = subprocess.run(
             cmd,
             cwd=self.oml_path,
@@ -129,6 +140,7 @@ class FingerprintGenerator:
             logger.error(f"❌ Model fingerprinting failed: {result.stderr}")
             raise RuntimeError(f"Model fingerprinting failed: {result.stderr}")
         
+        # Find output directory
         results_dir = self.oml_path / "results"
         model_dirs = sorted(
             results_dir.glob("*"),
@@ -141,6 +153,7 @@ class FingerprintGenerator:
         
         fingerprinted_model_path = model_dirs[0]
         
+        # Copy to output dir if specified
         if output_dir:
             import shutil
             output_dir.mkdir(parents=True, exist_ok=True)
@@ -173,6 +186,7 @@ class FingerprintGenerator:
         
         logger.info(f"🔍 Verifying fingerprints in: {model_path}")
         
+        # Build command
         cmd = [
             "python",
             str(self.oml_path / "check_fingerprints.py"),
@@ -181,6 +195,7 @@ class FingerprintGenerator:
             "--num_fingerprints", str(num_fingerprints)
         ]
         
+        # Run verification
         result = subprocess.run(
             cmd,
             cwd=self.oml_path,
@@ -192,6 +207,7 @@ class FingerprintGenerator:
             logger.error(f"❌ Verification failed: {result.stderr}")
             raise RuntimeError(f"Verification failed: {result.stderr}")
         
+        # Parse output for success rate
         output = result.stdout
         success_rate = 0.0
         
