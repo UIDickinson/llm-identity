@@ -81,6 +81,10 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 # 1. Check setup is complete
 python scripts/check_setup.py
 
+# Expected output
+============================================================
+✅ All checks passed! You are ready to go.
+
 
 #2. Verify all functions are working
 python test_all_functions.py # or PYTHONPATH=/workspaces/llm-identity/backend python test_all_functions.py
@@ -89,6 +93,7 @@ python test_all_functions.py # or PYTHONPATH=/workspaces/llm-identity/backend py
 ============================================================
 Total: 12 | Passed: 12 | Failed: 0
 ============================================================
+
 
 # Set Python path and run agent tests
 PYTHONPATH=/workspaces/llm-identity/backend python scripts/test_agent_locally.py
